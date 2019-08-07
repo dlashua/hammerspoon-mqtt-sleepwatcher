@@ -48,9 +48,13 @@ function obj:postall()
     return
   end
 
+  print('power ' .. self.power)
   self:mqtt_publish(self.mqtt_topic .. '/power', self.power)
+  print('screensaver ' .. self.screensaver)
   self:mqtt_publish(self.mqtt_topic .. '/screensaver', self.screensaver)
+  print('screens ' .. self.screens)
   self:mqtt_publish(self.mqtt_topic .. '/screens', self.screens)
+  print('active ' .. self.active)
   self:mqtt_publish(self.mqtt_topic .. '/active', self.active)
 end
 
@@ -81,36 +85,28 @@ function obj:sleepWatch(eventType)
         self.screensaver = 'off'
         self.screens = 'off'
         self.active = 'off'
-      elseif (eventType == hs.caffeinate.watcher.screensavedDidStart) then
+      elseif (eventType == hs.caffeinate.watcher.screensaverDidStart) then
         hs.notify.show("Screensaver On", "", "")
         self.screensaver = 'on'
+        self.screens = 'off'
         self.power = 'on'
-        self.active = 'off'
       elseif (eventType == hs.caffeinate.watcher.screensaverDidStop) then
         hs.notify.show("Screensaver Off", "", "")
         self.screensaver = 'off'
+        self.screens = 'on'
         self.power = 'on'
-        self.active = 'off'
       elseif (eventType == hs.caffeinate.watcher.screensDidLock) then
         hs.notify.show("Screens Locked", "", "")
         self.screens = 'off'
-        self.power = 'on'
-        self.active = 'off'
       elseif (eventType == hs.caffeinate.watcher.screensDidSleep) then
         hs.notify.show("Screens Sleep", "", "")
         self.screens = 'off'
-        self.power = 'on'
-        self.active = 'off'
       elseif (eventType == hs.caffeinate.watcher.screensDidUnlock) then
         hs.notify.show("Screens Unlocked", "", "")
         self.screens = 'on'
-        self.power = 'on'
-        self.active = 'on'
       elseif (eventType == hs.caffeinate.watcher.screensDidWake) then
         hs.notify.show("Screens Wake", "", "")
-        self.screens = 'off'
-        self.power = 'on'
-        self.active = 'on'
+        self.screens = 'on'
       end
 
       self:postall()
@@ -118,7 +114,7 @@ end
 
 function obj:start()
   self:postall()
-  hs.caffeinate.watcher.new(function() self:sleepWatch() end):start()
+  hs.caffeinate.watcher.new(function(eventType) self:sleepWatch(eventType) end):start()
   hs.timer.new(self.idle_interval,function () self:idleWatch() end, true):start()
 end
 
