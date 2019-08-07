@@ -22,6 +22,42 @@ spoon.SleepWatch.mqtt_topic = 'MQTT TOPIC TO PUBLISH ON'
 spoon.SleepWatch:start()
 ```
 
+## Home Assistant Configuration
+I made this specifically to work with [Home Assistant], however, it'll work just as well with anything capable of subscribing to MQTT topics.
+
+If you're using Home Assistant, your configuration will look something like this.
+
+```yaml
+binary_sensor:
+   - platform: mqtt
+     state_topic: "fanboy/power"
+     name: fanboy_power
+     payload_on: 'on'
+     payload_off: 'off'
+     force_update: true
+
+   - platform: mqtt
+     state_topic: "fanboy/screensaver"
+     name: fanboy_screensaver
+     payload_on: 'on'
+     payload_off: 'off'
+     force_update: true
+
+   - platform: mqtt
+     state_topic: "fanboy/screens"
+     name: fanboy_screens
+     payload_on: 'on'
+     payload_off: 'off'
+     force_update: true
+
+   - platform: mqtt
+     state_topic: "fanboy/active"
+     name: fanboy_active
+     payload_on: 'on'
+     payload_off: 'off'
+     force_update: true
+```
+
 ## Usage
 This code publishes `on` or `off` to 4 MQTT topics depending on the state of your Mac.
 
