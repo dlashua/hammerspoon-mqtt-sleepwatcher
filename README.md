@@ -22,7 +22,7 @@ spoon.SleepWatch.mqtt_topic = 'MQTT TOPIC TO PUBLISH ON'
 spoon.SleepWatch:start()
 ```
 
-### TLS support (edd one of these lines to the above config example)
+### TLS support (add one of these lines to the above config example)
 This will force a TLS connections and change the connection port to 8883
 ```lua
 spoon.SleepWatch.mqtt_certFile = 'CERT FILE'
