@@ -40,7 +40,7 @@ function obj:mqtt_publish(topic, message)
   if self.mqtt_certFile ~= 'none' then
     command = command .. ' --cafile ' .. self.mqtt_certFile
   elseif self.mqtt_certPath ~= 'none' then
-    command = command .. ' --caPath ' .. self.mqtt_certPath
+    command = command .. ' --capath ' .. self.mqtt_certPath
   end
     
   command = command .. ' -t ' .. topic .. ' -m "' .. message .. '"'
