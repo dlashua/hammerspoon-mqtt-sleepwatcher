@@ -22,6 +22,16 @@ spoon.SleepWatch.mqtt_topic = 'MQTT TOPIC TO PUBLISH ON'
 spoon.SleepWatch:start()
 ```
 
+### TLS support (edd one of these lines to the above config example)
+This will force a TLS connections and change the connection port to 8883
+```lua
+spoon.SleepWatch.mqtt_certFile = 'CERT FILE'
+```
+or
+```
+spoon.SleepWatch.mqtt_certPath = 'CERT PATH'
+```
+
 ## Home Assistant Configuration
 I made this specifically to work with [Home Assistant], however, it'll work just as well with anything capable of subscribing to MQTT topics.
 
