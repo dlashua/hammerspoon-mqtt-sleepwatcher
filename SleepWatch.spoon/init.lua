@@ -3,7 +3,7 @@ obj.__index = obj
 
 -- Metadata
 obj.name = "SleepWatch"
-obj.version = "0.1"
+obj.version = "0.2"
 obj.author = "Daniel Lashua <daniel@inklog.net>"
 obj.homepage = "none"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
