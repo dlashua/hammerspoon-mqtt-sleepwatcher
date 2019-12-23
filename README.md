@@ -1,6 +1,6 @@
 # mqtt-sleepwatcher Spoon for HammerSpoon
 ## What is it?
-This Spoon will report the state of your MacOS computer to MQTT. This includes if your Mac is powered on or not, if your keyboard/mouse is idle, if your screen is locked, and if your screensaver is active. 
+This Spoon will report the state of your MacOS computer to MQTT. This includes if your Mac is powered on or not, if your keyboard/mouse is idle, if your screen is locked, and if your screensaver is active.
 
 ## Requirements
 1. [Hammerspoon]
@@ -22,8 +22,14 @@ spoon.SleepWatch.mqtt_topic = 'MQTT TOPIC TO PUBLISH ON'
 spoon.SleepWatch:start()
 ```
 
+### Port Selection
+Change the port if you're not using the default port 1883 or 8883.  Required for CloudMQTT.
+```lua
+spoon.SleepWatch.mqtt_port = 'YOUR MQTT PORT'
+```
+
 ### TLS support (add one of these lines to the above config example)
-This will force a TLS connections and change the connection port to 8883
+This will force a TLS connections and change the connection port to 8883.  MacOS keeps certificates in the keychain.  If you are using `brew` then the openssl makes these available in `/usr/local/etc/openssl/cert.pem`
 ```lua
 spoon.SleepWatch.mqtt_certFile = 'CERT FILE'
 ```
@@ -83,7 +89,7 @@ This code publishes `on` or `off` to 4 MQTT topics depending on the state of you
     * reports `off` if your screens have turned off or are locked
 
 ## Help!
-I'm not a `lua` programmer. So I'm sure lots of improvements can be made. Specifically, I'd love to not be dependent on `mosquitto_pub`. However, the nature of a [Hammerspoon] install, doesn't provide `luarocks` for package/library installation. So I'd need some way to install that requirement automatically or some other MQTT implementation that is lighter than [Mosquitto]. 
+I'm not a `lua` programmer. So I'm sure lots of improvements can be made. Specifically, I'd love to not be dependent on `mosquitto_pub`. However, the nature of a [Hammerspoon] install, doesn't provide `luarocks` for package/library installation. So I'd need some way to install that requirement automatically or some other MQTT implementation that is lighter than [Mosquitto].
 
 [Hammerspoon]: http://www.hammerspoon.org
 [Mosquitto]: https://mosquitto.org/

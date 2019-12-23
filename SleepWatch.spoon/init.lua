@@ -3,7 +3,7 @@ obj.__index = obj
 
 -- Metadata
 obj.name = "SleepWatch"
-obj.version = "0.2"
+obj.version = "0.3"
 obj.author = "Daniel Lashua <daniel@inklog.net>"
 obj.homepage = "none"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
@@ -17,6 +17,7 @@ obj.active = 'on'
 obj.mqtt_host = 'none'
 obj.mqtt_user = 'none'
 obj.mqtt_pass = 'none'
+obj.mqtt_port = 'none'
 obj.mqtt_topic = 'none'
 
 obj.mqtt_certFile = 'none'
@@ -31,10 +32,10 @@ function obj:mqtt_publish(topic, message)
     return
   end
 
-  command = 'mosquitto_pub -r -h ' .. self.mqtt_host 
+  command = 'mosquitto_pub -r -h ' .. self.mqtt_host
 
   if self.mqtt_user ~= 'none' then
-    command = command .. ' -u ' .. self.mqtt_user .. ' -P ' .. self.mqtt_pass 
+    command = command .. ' -u ' .. self.mqtt_user .. ' -P "' .. self.mqtt_pass .. '"'
   end
 
   if self.mqtt_certFile ~= 'none' then
@@ -42,7 +43,11 @@ function obj:mqtt_publish(topic, message)
   elseif self.mqtt_certPath ~= 'none' then
     command = command .. ' --capath ' .. self.mqtt_certPath
   end
-    
+
+  if self.mqtt_port ~= 'none' then
+    command = command .. ' -p ' .. self.mqtt_port
+  end
+
   command = command .. ' -t ' .. topic .. ' -m "' .. message .. '"'
 
   rout, rstatus, rtype, rrc = hs.execute(command, true)
@@ -74,7 +79,7 @@ function obj:idleWatch()
     else
         self.active = 'on'
     end
-    
+
     self:postall()
 end
 
