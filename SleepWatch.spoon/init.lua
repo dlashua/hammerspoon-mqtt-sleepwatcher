@@ -3,7 +3,7 @@ obj.__index = obj
 
 -- Metadata
 obj.name = "SleepWatch"
-obj.version = "0.1"
+obj.version = "0.2"
 obj.author = "Daniel Lashua <daniel@inklog.net>"
 obj.homepage = "none"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
@@ -19,6 +19,9 @@ obj.mqtt_user = 'none'
 obj.mqtt_pass = 'none'
 obj.mqtt_topic = 'none'
 
+obj.mqtt_certFile = 'none'
+obj.mqtt_certPath = 'none'
+
 obj.idle_time = 180
 obj.idle_interval = 60
 
@@ -32,6 +35,12 @@ function obj:mqtt_publish(topic, message)
 
   if self.mqtt_user ~= 'none' then
     command = command .. ' -u ' .. self.mqtt_user .. ' -P ' .. self.mqtt_pass 
+  end
+
+  if self.mqtt_certFile ~= 'none' then
+    command = command .. ' --cafile ' .. self.mqtt_certFile
+  elseif self.mqtt_certPath ~= 'none' then
+    command = command .. ' --capath ' .. self.mqtt_certPath
   end
     
   command = command .. ' -t ' .. topic .. ' -m "' .. message .. '"'
