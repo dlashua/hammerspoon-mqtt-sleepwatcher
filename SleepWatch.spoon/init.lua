@@ -1,11 +1,12 @@
+print('Starting...')
 local obj = {}
 obj.__index = obj
 
 -- Metadata
 obj.name = "SleepWatch"
-obj.version = "0.3"
+obj.version = "0.4"
 obj.author = "Daniel Lashua <daniel@inklog.net>"
-obj.homepage = "none"
+obj.homepage = "https://github.com/dlashua/hammerspoon-mqtt-sleepwatcher"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 -- Set Defaults
@@ -22,6 +23,9 @@ obj.mqtt_topic = 'none'
 
 obj.mqtt_certFile = 'none'
 obj.mqtt_certPath = 'none'
+
+obj.notifications = false
+obj.debug = false
 
 obj.idle_time = 180
 obj.idle_interval = 60
@@ -50,9 +54,31 @@ function obj:mqtt_publish(topic, message)
 
   command = command .. ' -t ' .. topic .. ' -m "' .. message .. '"'
 
+  if self.debug then
+    command = command .. ' -d '
+    print('Command: ' .. command)
+  end
+
+  -- redirect STDERR to STDOUT
+  command = command .. '2>&1'
+
   rout, rstatus, rtype, rrc = hs.execute(command, true)
+  if self.debug then
+    print('rstatus: ' .. tostring(rstatus))
+    print('rtype: ' .. rtype)
+    print('rrc: ' .. rrc)
+    print('rout:\n' .. rout)
+  end
+
   if rrc ~= 0 then
     error('error code ' .. rrc .. ' in system command: ' .. command)
+  elseif string.match(rout, 'error') then
+    -- Wrong password looks like:
+    -- Client mosq-yak5yv9AHmnenXvKnE sending CONNECT
+    -- Client mosq-yak5yv9AHmnenXvKnE received CONNACK (5)
+    -- Connection error: Connection Refused: not authorised.
+    -- Client mosq-yak5yv9AHmnenXvKnE sending DISCONNECT
+    error('error output: ' .. rout .. ' in system command: ' .. command)
   end
 end
 
@@ -70,14 +96,21 @@ function obj:postall()
   self:mqtt_publish(self.mqtt_topic .. '/screens', self.screens)
   print('active ' .. self.active)
   self:mqtt_publish(self.mqtt_topic .. '/active', self.active)
+  print(' ')
 end
 
 function obj:idleWatch()
     if (hs.host.idleTime() > self.idle_time) then
+      if self.notifications then
         hs.notify.show("System Inactive", "", "")
-        self.active = 'off'
+      end
+      self.active = 'off'
     else
-        self.active = 'on'
+      self.active = 'on'
+    end
+
+    if self.debug then
+      print('watch idle_interval: ' .. self.idle_interval .. ' idle_time: ' .. self.idle_time ..  ' idle: ' .. hs.host.idleTime())
     end
 
     self:postall()
@@ -85,51 +118,76 @@ end
 
 function obj:sleepWatch(eventType)
       if (eventType == hs.caffeinate.watcher.systemDidWake) then
-        hs.notify.show("System Wake!", "", "")
+        if self.notifications then
+            hs.notify.show("System Wake!", "", "")
+        end
         self.power = 'on'
       elseif (eventType == hs.caffeinate.watcher.systemWillSleep) then
-        hs.notify.show("System Sleep", "", "")
+        if self.notifications then
+            hs.notify.show("System Sleep", "", "")
+        end
         self.power = 'off'
         self.screensaver = 'off'
         self.screens = 'off'
         self.active = 'off'
       elseif (eventType == hs.caffeinate.watcher.systemWillPowerOff) then
-        hs.notify.show("System Power Off", "", "")
+        if self.notifications then
+            hs.notify.show("System Power Off", "", "")
+        end
         self.power = 'off'
         self.screensaver = 'off'
         self.screens = 'off'
         self.active = 'off'
       elseif (eventType == hs.caffeinate.watcher.screensaverDidStart) then
-        hs.notify.show("Screensaver On", "", "")
+        if self.notifications then
+            hs.notify.show("Screensaver On", "", "")
+        end
         self.screensaver = 'on'
         self.screens = 'off'
         self.power = 'on'
       elseif (eventType == hs.caffeinate.watcher.screensaverDidStop) then
-        hs.notify.show("Screensaver Off", "", "")
+        if self.notifications then
+            hs.notify.show("Screensaver Off", "", "")
+        end
         self.screensaver = 'off'
         self.screens = 'on'
         self.power = 'on'
       elseif (eventType == hs.caffeinate.watcher.screensDidLock) then
-        hs.notify.show("Screens Locked", "", "")
+        if self.notifications then
+            hs.notify.show("Screens Locked", "", "")
+        end
         self.screens = 'off'
       elseif (eventType == hs.caffeinate.watcher.screensDidSleep) then
-        hs.notify.show("Screens Sleep", "", "")
+        if self.notifications then
+            hs.notify.show("Screens Sleep", "", "")
+        end
         self.screens = 'off'
       elseif (eventType == hs.caffeinate.watcher.screensDidUnlock) then
-        hs.notify.show("Screens Unlocked", "", "")
+        if self.notifications then
+            hs.notify.show("Screens Unlocked", "", "")
+        end
         self.screens = 'on'
       elseif (eventType == hs.caffeinate.watcher.screensDidWake) then
-        hs.notify.show("Screens Wake", "", "")
+        if self.notifications then
+            hs.notify.show("Screens Wake", "", "")
+        end
         self.screens = 'on'
       end
 
       self:postall()
 end
 
+
 function obj:start()
   self:postall()
-  hs.caffeinate.watcher.new(function(eventType) self:sleepWatch(eventType) end):start()
-  hs.timer.new(self.idle_interval,function () self:idleWatch() end, true):start()
+  -- https://github.com/Hammerspoon/hammerspoon/issues/1942#issuecomment-430450705
+  -- stops working after some time, this would suggest garbage collection
+  myWatcher = hs.caffeinate.watcher.new(function(eventType) self:sleepWatch(eventType) end)
+  myTimer = hs.timer.new(self.idle_interval,function () self:idleWatch() end, true)
+
+  myWatcher:start()
+  myTimer:start()
+  print('Started')
 end
 
 return obj
