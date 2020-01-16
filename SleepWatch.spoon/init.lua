@@ -60,7 +60,7 @@ function obj:mqtt_publish(topic, message)
   end
 
   -- redirect STDERR to STDOUT
-  command = command .. '2>&1'
+  command = command .. ' 2>&1'
 
   rout, rstatus, rtype, rrc = hs.execute(command, true)
   if self.debug then
